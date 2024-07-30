@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844944575677",
+    "project_id": "yaesta-c9ea4",
+    "storage_bucket": "yaesta-c9ea4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844944575677:android:43f276bc7bf2a3f424fbd4",
+        "android_client_info": {
+          "package_name": "com.mycompany.yaesta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJrl8yD8c0sxwn3L7HwypYAjZxa4DjOBM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
