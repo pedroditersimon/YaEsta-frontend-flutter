@@ -3,13 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '/auth/base_auth_user_provider.dart';
-
 import '/index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 export 'package:go_router/go_router.dart';
-export 'serialization_util.dart';
 
 const kTransitionInfoKey = '__transition_info__';
 
@@ -19,8 +16,6 @@ class AppStateNotifier extends ChangeNotifier {
   static AppStateNotifier? _instance;
   static AppStateNotifier get instance => _instance ??= AppStateNotifier._();
 
-  BaseAuthUser? initialUser;
-  BaseAuthUser? user;
   bool showSplashImage = true;
   String? _redirectLocation;
 
@@ -31,11 +26,6 @@ class AppStateNotifier extends ChangeNotifier {
   /// Otherwise, this will trigger a refresh and interrupt the action(s).
   bool notifyOnAuthChange = true;
 
-  bool get loading => user == null || showSplashImage;
-  bool get loggedIn => user?.loggedIn ?? false;
-  bool get initiallyLoggedIn => initialUser?.loggedIn ?? false;
-  bool get shouldRedirect => loggedIn && _redirectLocation != null;
-
   String getRedirectLocation() => _redirectLocation!;
   bool hasRedirect() => _redirectLocation != null;
   void setRedirectLocationIfUnset(String loc) => _redirectLocation ??= loc;
@@ -45,20 +35,6 @@ class AppStateNotifier extends ChangeNotifier {
   /// to perform subsequent actions (such as navigation) afterwards.
   void updateNotifyOnAuthChange(bool notify) => notifyOnAuthChange = notify;
 
-  void update(BaseAuthUser newUser) {
-    final shouldUpdate =
-        user?.uid == null || newUser.uid == null || user?.uid != newUser.uid;
-    initialUser ??= newUser;
-    user = newUser;
-    // Refresh the app on auth change unless explicitly marked otherwise.
-    // No need to update unless the user has changed.
-    if (notifyOnAuthChange && shouldUpdate) {
-      notifyListeners();
-    }
-    // Once again mark the notifier as needing to update on auth change
-    // (in order to catch sign in / out events).
-    updateNotifyOnAuthChange(true);
-  }
 
   void stopShowingSplashImage() {
     showSplashImage = false;
@@ -70,14 +46,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? const HomepageWidget() : const LoginWidget(),
+      errorBuilder: (context, state) => const LoginWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? const HomepageWidget() : const LoginWidget(),
+          builder: (context, _) => const LoginWidget(),
           routes: [
             FFRoute(
               name: 'Login',
@@ -102,7 +76,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             FFRoute(
               name: 'Listadeeventos',
               path: 'listadeeventos',
-              builder: (context, params) => const ListadeeventosWidget(),
+              builder: (context, params) => ListadeeventosWidget(),
             ),
             FFRoute(
               name: 'proximosEventos',
@@ -233,7 +207,7 @@ class FFParameters {
           },
         ),
       ).onError((_, __) => [false]).then((v) => v.every((e) => e));
-
+/*
   dynamic getParam<T>(
     String paramName,
     ParamType type, {
@@ -258,7 +232,7 @@ class FFParameters {
       isList,
       collectionNamePath: collectionNamePath,
     );
-  }
+  }*/
 }
 
 class FFRoute {
@@ -282,13 +256,13 @@ class FFRoute {
         name: name,
         path: path,
         redirect: (context, state) {
-          if (appStateNotifier.shouldRedirect) {
+          if (false) {
             final redirectLocation = appStateNotifier.getRedirectLocation();
             appStateNotifier.clearRedirectLocation();
             return redirectLocation;
           }
 
-          if (requireAuth && !appStateNotifier.loggedIn) {
+          if (requireAuth && false) {
             appStateNotifier.setRedirectLocationIfUnset(state.uri.toString());
             return '/login';
           }
@@ -303,7 +277,7 @@ class FFRoute {
                   builder: (context, _) => builder(context, ffParams),
                 )
               : builder(context, ffParams);
-          final child = appStateNotifier.loading
+          final child = false
               ? Container(
                   color: Colors.transparent,
                   child: Image.asset(

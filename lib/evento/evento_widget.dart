@@ -1,3 +1,6 @@
+import 'package:ya_esta/ApiClient/api_client.dart';
+import 'package:ya_esta/ApiClient/response_models.dart';
+
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -9,7 +12,9 @@ import 'evento_model.dart';
 export 'evento_model.dart';
 
 class EventoWidget extends StatefulWidget {
-  const EventoWidget({super.key});
+  final Map<String, dynamic>? params;
+
+  const EventoWidget({Key? key, this.params}): super(key: key);
 
   @override
   State<EventoWidget> createState() => _EventoWidgetState();
@@ -23,10 +28,18 @@ class _EventoWidgetState extends State<EventoWidget>
 
   final animationsMap = <String, AnimationInfo>{};
 
+  bool isLoading = false;
+  ResponseChannelEvent channelEvent = new ResponseChannelEvent();
+
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => EventoModel());
+
+    var channelEventMap = widget.params?["channelEvent"];
+    channelEvent = ResponseChannelEvent.fromJson(channelEventMap);
+
+    GetChannelEvent();
 
     animationsMap.addAll({
       'rowOnPageLoadAnimation': AnimationInfo(
@@ -140,6 +153,109 @@ class _EventoWidgetState extends State<EventoWidget>
     super.dispose();
   }
 
+  Future<void> GetChannelEvent() async {
+    if (!channelEvent.isValid())
+      return;
+
+    setState(() { isLoading = true; });
+    final _event = await apiClient.getChannelEventByID(channelEvent.id);
+    setState(() {
+      channelEvent = _event;
+      isLoading = false;
+    });
+  }
+
+  Widget GetEventStatusWidget(String status) {
+    if (status == "completed") {
+      return Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                    0.0, 12.0, 0.0, 0.0),
+                child: Container(
+                  height: 32.0,
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context)
+                        .success,
+                    borderRadius:
+                        BorderRadius.circular(12.0),
+                    border: Border.all(
+                      color:
+                          FlutterFlowTheme.of(context)
+                              .success,
+                      width: 2.0,
+                    ),
+                  ),
+                  child: Align(
+                    alignment:
+                        const AlignmentDirectional(0.0, 0.0),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional
+                          .fromSTEB(
+                              12.0, 0.0, 12.0, 0.0),
+                      child: Text(
+                        'completado',
+                        style:
+                            FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Poppins',
+                                  color: FlutterFlowTheme
+                                          .of(context)
+                                      .primaryBackground,
+                                  letterSpacing: 0.0,
+                                ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+    }
+    else /*if (status == "pending" || status == "registered")*/ {
+        return Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 12.0, 0.0, 0.0),
+                    child: Container(
+                      height: 32.0,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context)
+                            .info,
+                        borderRadius:
+                            BorderRadius.circular(12.0),
+                        border: Border.all(
+                          color:
+                              FlutterFlowTheme.of(context)
+                                  .info,
+                          width: 2.0,
+                        ),
+                      ),
+                      child: Align(
+                        alignment:
+                            const AlignmentDirectional(0.0, 0.0),
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional
+                              .fromSTEB(
+                                  12.0, 0.0, 12.0, 0.0),
+                          child: Text(
+                            'pendiente',
+                            style:
+                                FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'Poppins',
+                                      color: FlutterFlowTheme
+                                              .of(context)
+                                          .primaryBackground,
+                                      letterSpacing: 0.0,
+                                    ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+    }
+
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -187,7 +303,7 @@ class _EventoWidgetState extends State<EventoWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'nombre evento',
+                          '${channelEvent.title}',
                           style: FlutterFlowTheme.of(context)
                               .displaySmall
                               .override(
@@ -196,25 +312,7 @@ class _EventoWidgetState extends State<EventoWidget>
                               ),
                         ).animateOnPageLoad(
                             animationsMap['textOnPageLoadAnimation1']!),
-                        Container(
-                          width: 100.0,
-                          height: 32.0,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).secondary,
-                            borderRadius: BorderRadius.circular(32.0),
-                          ),
-                          alignment: const AlignmentDirectional(0.0, 0.0),
-                          child: Text(
-                            'In Progress',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Poppins',
-                                  color: Colors.white,
-                                  letterSpacing: 0.0,
-                                ),
-                          ),
-                        ),
+                        GetEventStatusWidget(channelEvent.status),
                       ],
                     ).animateOnPageLoad(
                         animationsMap['rowOnPageLoadAnimation']!),
@@ -225,7 +323,7 @@ class _EventoWidgetState extends State<EventoWidget>
                     ).animateOnPageLoad(
                         animationsMap['dividerOnPageLoadAnimation']!),
                     Text(
-                      'Tuesday, 10:00am',
+                      '${channelEvent.actionDate}',
                       style: FlutterFlowTheme.of(context).displaySmall.override(
                             fontFamily: 'Poppins',
                             color: FlutterFlowTheme.of(context).primary,
@@ -237,7 +335,7 @@ class _EventoWidgetState extends State<EventoWidget>
                       padding:
                           const EdgeInsetsDirectional.fromSTEB(0.0, 50.0, 0.0, 0.0),
                       child: Text(
-                        'descripción del evento                               \n\n\n\n\n\n',
+                        '${channelEvent.description}',
                         style:
                             FlutterFlowTheme.of(context).labelMedium.override(
                                   fontFamily: 'Poppins',
@@ -255,7 +353,7 @@ class _EventoWidgetState extends State<EventoWidget>
                 alignment: const AlignmentDirectional(0.0, 0.0),
                 child: FFButtonWidget(
                   onPressed: () async {
-                    context.pushNamed('Listadeeventos');
+                    Navigator.pop(context);
                   },
                   text: 'volver',
                   options: FFButtonOptions(

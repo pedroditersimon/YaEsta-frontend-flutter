@@ -271,9 +271,6 @@ class _HomepageWidgetState extends State<HomepageWidget>
                       focusColor: Colors.transparent,
                       hoverColor: Colors.transparent,
                       highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed('proximosEventos');
-                      },
                       child: Container(
                         height: 120.0,
                         decoration: BoxDecoration(
@@ -382,9 +379,6 @@ class _HomepageWidgetState extends State<HomepageWidget>
                       focusColor: Colors.transparent,
                       hoverColor: Colors.transparent,
                       highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed('SearchPublicChannels');
-                      },
                       child: Container(
                         height: 120.0,
                         decoration: BoxDecoration(
@@ -416,7 +410,7 @@ class _HomepageWidgetState extends State<HomepageWidget>
                             hoverColor: Colors.transparent,
                             highlightColor: Colors.transparent,
                             onTap: () async {
-                              context.pushNamed('Listadeeventos');
+                              context.pushNamed('proximosEventos');
                             },
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
@@ -493,9 +487,6 @@ class _HomepageWidgetState extends State<HomepageWidget>
                       focusColor: Colors.transparent,
                       hoverColor: Colors.transparent,
                       highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed('SearchPublicChannels');
-                      },
                       child: Container(
                         height: 120.0,
                         decoration: BoxDecoration(

@@ -1,28 +1,54 @@
 // lib/api_client.dart
 
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import './response_models.dart';
+import 'package:dio/dio.dart';
+
+
 
 class ApiClient {
   final String baseURL;
-  final http.Client httpClient;
+  final Dio dio;
 
-  ApiClient(this.baseURL, {http.Client? httpClient})
-      : httpClient = httpClient ?? http.Client();
+  ApiClient(this.baseURL, {Dio? dioClient})
+      : dio = dioClient ?? Dio(BaseOptions(baseUrl: baseURL)) {
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) async {
+      options.extra["withCredentials"] = true; 
+      return handler.next(options);
+    }));
+  }
 
   // Método de ayuda para hacer solicitudes HTTP
-  Future<http.Response> _doFetch(String endpoint, String method, {Map<String, dynamic>? body}) async {
-    final uri = Uri.parse('$baseURL$endpoint');
-    final request = http.Request(method, uri);
+  Future<Response> _doFetch(String endpoint, String method, {Map<String, dynamic>? body}) async {
+    final options = Options(
+      method: method.toUpperCase(),
+      headers: body != null ? {'Content-Type': 'application/json'} : null,
+    );
 
-    if (body != null) {
-      request.body = json.encode(body);
-      request.headers['Content-Type'] = 'application/json';
+    try {
+      switch (method.toUpperCase()) {
+        case 'GET':
+          return await dio.get(endpoint, options: options);
+        case 'POST':
+          return await dio.post(
+            endpoint,
+            data: body,
+            options: options,
+          );
+        case 'PUT':
+          return await dio.put(
+            endpoint,
+            data: body,
+            options: options,
+          );
+        case 'DELETE':
+          return await dio.delete(endpoint, options: options);
+        default:
+          throw Exception('Método HTTP no soportado');
+      }
+    } on DioError catch (e) {
+      throw Exception('Error en la solicitud: ${e.message}');
     }
-
-    final streamedResponse = await httpClient.send(request);
-    return await http.Response.fromStream(streamedResponse);
   }
 
   // Auth
@@ -47,7 +73,7 @@ class ApiClient {
       'username': username,
       'password': password,
     };
-
+    print('$username,$password');
     try {
       final response = await _doFetch('/login', 'POST', body: body);
       return response.statusCode == 200;
@@ -70,7 +96,11 @@ class ApiClient {
   Future<ResponseUser> getLoggedUser() async {
     try {
       final response = await _doFetch('/logged_user', 'GET');
-      final data = json.decode(response.body);
+      
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       return ResponseUser.fromJson(data);
     } catch (e) {
       print(e);
@@ -82,7 +112,11 @@ class ApiClient {
   Future<List<ResponseChannel>> getPublicChannels(String channelName) async {
     try {
       final response = await _doFetch('/channels/search/$channelName', 'GET');
-      final data = json.decode(response.body);
+
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       if (data is List) {
         return data.map((item) => ResponseChannel.fromJson(item)).toList();
       }
@@ -96,7 +130,10 @@ class ApiClient {
   Future<ResponseChannel> getChannelByID(String channelID) async {
     try {
       final response = await _doFetch('/channels/$channelID', 'GET');
-      final data = json.decode(response.body);
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       return ResponseChannel.fromJson(data);
     } catch (e) {
       print(e);
@@ -107,7 +144,10 @@ class ApiClient {
   Future<List<ResponseChannel>> getUserChannels() async {
     try {
       final response = await _doFetch('/channels/user', 'GET');
-      final data = json.decode(response.body);
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       if (data is List) {
         return data.map((item) => ResponseChannel.fromJson(item)).toList();
       }
@@ -121,7 +161,10 @@ class ApiClient {
   Future<List<ResponseChannel>> getUserAdminChannels() async {
     try {
       final response = await _doFetch('/channels/user/admin', 'GET');
-      final data = json.decode(response.body);
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       if (data is List) {
         return data.map((item) => ResponseChannel.fromJson(item)).toList();
       }
@@ -142,7 +185,10 @@ class ApiClient {
 
     try {
       final response = await _doFetch('/channels/create', 'POST', body: body);
-      final data = json.decode(response.body);
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       return ResponseChannel.fromJson(data);
     } catch (e) {
       print(e);
@@ -178,10 +224,27 @@ class ApiClient {
     }
   }
 
-  Future<List<ResponseChannelEvent>> getChannelEvents(String channelID) async {
+  Future<ResponseChannelEvent> getChannelEventByID(String eventID) async {
     try {
-      final response = await _doFetch('/channels/$channelID/events', 'GET');
-      final data = json.decode(response.body);
+      final response = await _doFetch('/events/$eventID', 'GET');
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
+      return ResponseChannelEvent.fromJson(data);
+    } catch (e) {
+      print(e);
+      return ResponseChannelEvent();
+    }
+  }
+
+  Future<List<ResponseChannelEvent>> getChannelCompletedEvents(String channelID) async {
+    try {
+      final response = await _doFetch('/events/completed/channel/$channelID', 'GET');
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       if (data is List) {
         return data.map((item) => ResponseChannelEvent.fromJson(item)).toList();
       }
@@ -207,7 +270,10 @@ class ApiClient {
 
     try {
       final response = await _doFetch('/channels/$channelID/events/create', 'POST', body: body);
-      final data = json.decode(response.body);
+      var data = response.data;
+      if (response.data is String)
+        data = json.decode(response.data);
+
       return ResponseChannelEvent.fromJson(data);
     } catch (e) {
       print(e);
@@ -247,79 +313,6 @@ class ApiClient {
     }
   }
 
-  Future<List<ResponseAccessDocument>> getAccessDocuments() async {
-    try {
-      final response = await _doFetch('/access_documents', 'GET');
-      final data = json.decode(response.body);
-      if (data is List) {
-        return data.map((item) => ResponseAccessDocument.fromJson(item)).toList();
-      }
-      return [];
-    } catch (e) {
-      print(e);
-      return [];
-    }
-  }
-
-  Future<ResponseAccessDocument> getAccessDocumentByID(String accessDocumentID) async {
-    try {
-      final response = await _doFetch('/access_documents/$accessDocumentID', 'GET');
-      final data = json.decode(response.body);
-      return ResponseAccessDocument.fromJson(data);
-    } catch (e) {
-      print(e);
-      return ResponseAccessDocument();
-    }
-  }
-
-  Future<bool> createNewAccessDocument({required String actionType, bool enabled = false, bool requiresApproval = false, String targetChannelId = "", String channelTitleTemplate = "New Channel {index}"}) async {
-    final body = {
-      'access_document': {
-        'action_type': actionType,
-        'enabled': enabled,
-        'requires_approval': requiresApproval,
-        'target_channel_id': targetChannelId,
-        'channel_title_template': channelTitleTemplate,
-      }
-    };
-
-    try {
-      final response = await _doFetch('/access_documents/create', 'POST', body: body);
-      return response.statusCode == 200;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
-
-  Future<bool> editAccessDocument({required String accessDocumentID, bool? enabled, bool? requiresApproval, String? actionType, String? targetChannelId, String? channelTitleTemplate}) async {
-    final body = {
-      'access_document': {
-        '_id': accessDocumentID,
-        'enabled': enabled,
-        'requires_approval': requiresApproval,
-        'action_type': actionType,
-        'target_channel_id': targetChannelId,
-        'channel_title_template': channelTitleTemplate,
-      }
-    };
-
-    try {
-      final response = await _doFetch('/access_documents/$accessDocumentID/edit', 'PUT', body: body);
-      return response.statusCode == 200;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
-
-  Future<bool> deleteAccessDocument(String accessDocumentID) async {
-    try {
-      final response = await _doFetch('/access_documents/$accessDocumentID/delete', 'DELETE');
-      return response.statusCode == 200;
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
 }
+
+final ApiClient apiClient = ApiClient("https://yaesta-backend.onrender.com");

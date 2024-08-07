@@ -1,4 +1,5 @@
-import '/auth/firebase_auth/auth_util.dart';
+import 'package:ya_esta/ApiClient/api_client.dart';
+
 import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -33,6 +34,7 @@ class _LoginWidgetState extends State<LoginWidget>
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       GoRouter.of(context).prepareAuthEvent();
+      //context.goNamedAuth('homepage', context.mounted);
       if (_model.passwordCreateTextController.text !=
           _model.passwordConfirmTextController.text) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -45,12 +47,14 @@ class _LoginWidgetState extends State<LoginWidget>
         return;
       }
 
-      final user = await authManager.createAccountWithEmail(
-        context,
-        _model.emailAddressCreateTextController.text,
-        _model.passwordCreateTextController.text,
+      // register
+      final registered = await apiClient.register(
+        username: _model.emailAddressCreateTextController.text,
+        password: _model.passwordCreateTextController.text,
+        repeatPassword: _model.passwordCreateTextController.text
       );
-      if (user == null) {
+
+      if (!registered) {
         return;
       }
 
@@ -538,18 +542,12 @@ class _LoginWidgetState extends State<LoginWidget>
                                                       GoRouter.of(context)
                                                           .prepareAuthEvent();
 
-                                                      final user =
-                                                          await authManager
-                                                              .signInWithEmail(
-                                                        context,
-                                                        _model
-                                                            .emailAddressTextController
-                                                            .text,
-                                                        _model
-                                                            .passwordTextController
-                                                            .text,
+                                                      final logged = await apiClient.login(
+                                                        username: _model.emailAddressTextController.text,
+                                                        password: _model.passwordTextController.text
                                                       );
-                                                      if (user == null) {
+                                                      
+                                                      if (!logged) {
                                                         return;
                                                       }
 
@@ -1015,17 +1013,12 @@ class _LoginWidgetState extends State<LoginWidget>
                                                         return;
                                                       }
 
-                                                      final user = await authManager
-                                                          .createAccountWithEmail(
-                                                        context,
-                                                        _model
-                                                            .emailAddressCreateTextController
-                                                            .text,
-                                                        _model
-                                                            .passwordCreateTextController
-                                                            .text,
+                                                      final registered = await apiClient.register(
+                                                        username: _model.emailAddressCreateTextController.text,
+                                                        password: _model.passwordCreateTextController.text,
+                                                        repeatPassword: _model.passwordCreateTextController.text
                                                       );
-                                                      if (user == null) {
+                                                      if (!registered) {
                                                         return;
                                                       }
 

@@ -25,6 +25,9 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  json_annotation: ^4.8.0
+  dio: ^5.0.0
+  cookie_jar: ^3.0.1
   auto_size_text: 3.0.0
   cached_network_image: 3.3.1
   cloud_firestore: 4.17.3
@@ -85,6 +88,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.0
+  requests: ^4.7.0
 
 dependency_overrides:
   http: 1.2.1
